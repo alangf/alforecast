@@ -95,11 +95,7 @@ class App extends Component {
       return false
 
     try {
-<<<<<<< HEAD
-      const protocol = process.env.NODE_ENV == 'development' ? 'ws://' : 'wss://'
-=======
       const protocol = process.env.NODE_ENV === 'development' ? 'ws://' : 'wss://'
->>>>>>> dev
       const socketUrl = protocol + document.location.hostname
       console.log('Abriendo socket ' + socketUrl) 
       const socket = new WebSocket(socketUrl)
