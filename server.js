@@ -2,11 +2,12 @@ require('dotenv').load();
 
 const express = require('express')
 const app = express()
-const port = process.env.PORT
+const port = process.env.PORT || 5000
 const cors = require('cors')
 const Promise = require("bluebird");
 const WebSocket = require('ws');
 const socket = require('./app/socket')
+const server = require('http').createServer(app)
 
 app.use(cors())
 
@@ -37,11 +38,11 @@ require('./app/routes')(app, cache);
 console.log(process.env.NODE_ENV)
 
 // Iniciar express
-app.listen(port, () => console.log(`Listening on port ${port}`));
+server.listen(port)
 
 // Iniciar socket
 try {
-    const wss = new WebSocket.Server({ port: process.env.SOCKET_PORT });
+    const wss = new WebSocket.Server({ server });
     wss.on('connection', ws => {
         console.log('Nueva conexión de socket') 
         socket(ws, cache)

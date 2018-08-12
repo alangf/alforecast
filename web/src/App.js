@@ -77,7 +77,7 @@ class App extends Component {
 
     try {
       const protocol = process.env.NODE_ENV == 'development' ? 'ws://' : 'wss://'
-      const socketUrl = protocol + document.location.hostname + ':' + process.env.REACT_APP_SOCKET_PORT
+      const socketUrl = protocol + document.location.hostname
       console.log('Abriendo socket ' + socketUrl) 
       const socket = new WebSocket(socketUrl)
 
