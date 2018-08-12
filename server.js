@@ -11,11 +11,7 @@ const socket = require('./app/socket')
 app.use(cors())
 
 // Iniciar cache
-const redisClientOptions = {
-    host: process.env.REDIS_HOST,
-    port: process.env.REDIS_PORT,
-}
-const client = Promise.promisifyAll(require('redis')).createClient(redisClientOptions)
+const client = Promise.promisifyAll(require('redis')).createClient(process.env.REDIS_URL)
 const CacheUtil = require('./app/cache')
 const cache = new CacheUtil(client) 
 
