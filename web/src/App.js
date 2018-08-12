@@ -75,14 +75,8 @@ class App extends Component {
     if (this.state.isConnectingToSocket)
       return false
 
-    // Si en 3 segundos no ha iniciado el socket, reintentar.
-    if (!this.state.isSocketOnline)
-      setTimeout(() => {
-        this.startSocket()
-      }, 3000)
-
     try {
-      const socketUrl = 'ws://' + document.location.hostname + ':' + process.env.REACT_APP_SOCKET_PORT
+      const socketUrl = 'wss://' + document.location.hostname + ':' + process.env.REACT_APP_SOCKET_PORT
       const socket = new WebSocket(socketUrl)
 
       this.setState({
@@ -99,7 +93,8 @@ class App extends Component {
         // Si se desconecta, esperar un segundo y reconectar.
         socket.addEventListener('close', e => {
           this.setState({
-            isSocketOnline: false
+            isSocketOnline: false,
+            isConnectingToSocket: false
           }, () => {
             setTimeout(() => {
               this.startSocket()
