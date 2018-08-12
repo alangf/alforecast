@@ -43,10 +43,30 @@ server.listen(port)
 // Iniciar socket
 try {
     const wss = new WebSocket.Server({ server });
+
+    function noop() {}
+    function heartbeat() {
+        this.isAlive = true;
+    }
+
     wss.on('connection', ws => {
         console.log('Nueva conexión de socket') 
+        ws.isAlive = true;
+        ws.on('pong', heartbeat);
         socket(ws, cache)
     });
+
+    // Cada 5 segundos revisar que los clientes sigan conectados, o se harán llamadas innecesarias al api.
+    setInterval(function ping() {
+        wss.clients.forEach(function each(ws) {
+            if (ws.isAlive === false) {
+                // No pong, terminar.
+                return ws.terminate();
+            }
+            ws.isAlive = false;
+            ws.ping(noop);
+        });
+    }, 5000);
 }
 catch (e) {
     console.log('Error iniciando socket: ', e)

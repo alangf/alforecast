@@ -1,6 +1,14 @@
 const api = require('./api')
 const jsonResponse = require('./json-response')
 
+const send = (ws, success, data) => {
+    // Si esta cerrado, terminar y matar intervalo.
+    if (ws.readyState !== 1) {
+        ws.terminate()
+        clearInterval(interval)
+    } else
+        ws.send(JSON.stringify(jsonResponse(success, data)))
+}
 
 /**
  * Obtiene ciudades con forecast al dia y las envia al socket.
@@ -18,20 +26,22 @@ const emitForecast = (ws, cache) => {
             .then(cities => {
                 // Enviar ciudades actualizadas al app.
                 console.log('Emitiendo forecast')
-                ws.send(JSON.stringify(jsonResponse(true, {cities})))
+                send(ws, true, {cities})
                 resolve(cities)
             })
             .catch(error => {
-                ws.send(JSON.stringify(jsonResponse(false, { error: error })))
+                send(ws, false, { error: error })
                 reject(error)
             })
         }
         catch (error) {
             cache.logError('Error consultando la API.')
-            ws.send(JSON.stringify(jsonResponse(false, { error: error.message })))
+            send(ws, false, { error: error.message })
         }
     })
 }
+
+let interval
 
 module.exports = (ws, cache) => {
     // Emitir primer forecast.
@@ -41,11 +51,17 @@ module.exports = (ws, cache) => {
     }) 
 
     // Y re-emitir cada 10 segundos.
-    setInterval(() => {
-        emitForecast(ws, cache)
-        .catch(error => {
-            console.error('Error emitiendo interval de forecast: ' + error)
-        }) 
+    interval = setInterval(() => {
+        // Solo emitir si sigue conectado.
+        if (ws.readyState === 1)
+            emitForecast(ws, cache)
+            .catch(error => {
+                console.error('Error emitiendo interval de forecast: ' + error)
+            }) 
+        else {
+            clearInterval(interval)
+            ws.terminate()
+        }
     }, 10000)
 
     ws.on('message', message => {
