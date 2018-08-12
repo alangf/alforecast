@@ -1,0 +1,90 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+.app {
+  min-width: 100vw;
+  min-height: 100vh;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+}
+
+body {
+  font-family: 'Quicksand', Helvetica, Arial, sans-serif; 
+  font-weight: 300;
+}
+
+.dashboard {
+  display: flex;
+  flex-wrap: wrap;
+  text-align: center;
+  justify-content: space-between;
+  flex: 1;
+  width: 100%;
+  height: 100vh;
+}
+
+.top-bar {
+  width: 100%;
+  background-color: #403F4C;
+  color: #fff;
+  margin-bottom: 1px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.top-bar-local {
+  padding: 5px 20px;
+  text-align: center;
+  width: 100%;
+}
+
+.top-bar-error {
+  background-color: #E84855;
+  color: #fff;
+  padding: 5px 20px;
+  text-align: center;
+  width: 100%;
+}
+
+.cities-grid {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+@media (min-width: 600px) {
+
+  .top-bar {
+    flex-wrap: none;
+  }
+
+  .top-bar-local {
+    flex: 1;
+    text-align: left;
+    width: auto;
+  }
+
+  .top-bar-error {
+    text-align: right;
+    width: auto;
+  }
+
+}
+
+@media (min-width: 800px) and (min-height: 600px) {
+
+  .dashboard {
+    overflow: hidden;
+  }
+
+}

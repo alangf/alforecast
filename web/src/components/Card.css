@@ -1,0 +1,47 @@
+.city {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    min-height: 80px;
+    width: 100%;
+    background-color: #403F4C;
+    color: #fff;
+    margin-bottom: 1px;
+    text-align: center;
+    flex-direction: column;
+  }
+
+  .city-name, .city-temperature, .city-date {
+    display: block;
+  }
+
+  h1.city-name {
+    font-size: 30px;
+    margin: 0 0 10px 0;
+    font-weight: 300;
+  }
+
+  h2.city-temperature {
+    margin-bottom: 10px;
+    font-weight: 300;
+  }
+  
+  @media (min-width: 600px) {
+
+    .city {
+      width: calc((100% / 3) - 1px);
+      min-height: calc(50% - 1px);
+    }
+    
+    /* los de abajo sin margen */
+    .city:nth-child(1n+5) {
+      margin-bottom: 0;
+    }
+
+    h1.city-name {
+      font-size: 40px;
+      margin: 25px 0;
+    }
+    
+  }
