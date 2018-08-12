@@ -31,7 +31,7 @@ class App extends Component {
   }
 
   fetchCities () {
-    axios.get('http://localhost:5000/api/forecast')
+    axios.get('/api/forecast')
     .then(response => {
       if (response.data.success) {
         // El api envió bien las ciudades.
