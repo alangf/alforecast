@@ -79,8 +79,8 @@ class App extends Component {
     return city.time !== '' && city.timezone !== '' 
       ? (
         <div>
-          <p>moment.tz(city.time, city.timezone).format('DD-MM-YYYY')</p>
-          <p>moment.tz(city.time, city.timezone).format('hh:mm:ss A')</p>
+          <p>{moment.tz(city.time, city.timezone).format('DD-MM-YYYY')}</p>
+          <p>{moment.tz(city.time, city.timezone).format('hh:mm:ss A')}</p>
         </div>
       )
       : ''
@@ -95,7 +95,11 @@ class App extends Component {
       return false
 
     try {
+<<<<<<< HEAD
       const protocol = process.env.NODE_ENV == 'development' ? 'ws://' : 'wss://'
+=======
+      const protocol = process.env.NODE_ENV === 'development' ? 'ws://' : 'wss://'
+>>>>>>> dev
       const socketUrl = protocol + document.location.hostname
       console.log('Abriendo socket ' + socketUrl) 
       const socket = new WebSocket(socketUrl)
