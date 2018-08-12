@@ -26,12 +26,19 @@ class App extends Component {
     this.ticker = null
   }
 
+  /**
+   * La temperatura del api viene en fahrenheit.
+   * @param Number fahrenheit 
+   */
   toCelsius(fahrenheit) {
     return parseFloat((fahrenheit - 32) / 1.8).toFixed(1)
   }
 
+  /**
+   * Carga inicial de las ciudades.
+   */
   fetchCities () {
-    axios.get('http://localhost:5000/api/forecast')
+    axios.get('/api/forecast')
     .then(response => {
       if (response.data.success) {
         // El api envió bien las ciudades.
@@ -64,12 +71,24 @@ class App extends Component {
     })
   }
 
+  /**
+   * Formatea el timestamp de la ciudad.
+   * @param City city 
+   */
   formatCityTime (city) {
     return city.time !== '' && city.timezone !== '' 
-      ? moment.tz(city.time, city.timezone).format('DD-MM-YYYY hh:mm:ss A')
+      ? (
+        <div>
+          <p>moment.tz(city.time, city.timezone).format('DD-MM-YYYY')</p>
+          <p>moment.tz(city.time, city.timezone).format('hh:mm:ss A')</p>
+        </div>
+      )
       : ''
   }
 
+  /**
+   * Incia conexion con el socket y maneja los eventos.
+   */
   startSocket () {
     // Si ya esta intentando conectar, abortar.
     if (this.state.isConnectingToSocket)
@@ -133,13 +152,17 @@ class App extends Component {
             errorMessage: payload.data.error
           })
 
-          // Pedir forecast al socket (si no hay otro fetch en progreso).
-          if (!this.state.isFetchingForecast)
+          // Esperar 1 segundo (para que el error sea visible) y pedir forecast 
+          // al socket (si no hay otro fetch en progreso).
+          setTimeout(() => {
+            if (!this.state.isFetchingForecast)
             this.setState({
               isFetchingForecast: true
             }, () => {
               socket.send('request-forecast')
             })        
+          }, 1000)
+          
         }
       })
     }
@@ -151,6 +174,9 @@ class App extends Component {
     }
   }
 
+  /**
+   * Arranca intervalo para actualizar horas.
+   */
   startTicker () {
     if (this.ticker) clearInterval(this.ticker)
 
@@ -159,6 +185,9 @@ class App extends Component {
     }, 1000)  
   }
 
+  /**
+   * Suma un segundo a timestamps de hora actual, de ciudades y ultima actualizacion.
+   */
   tick () {
     // Solo actualizar ciudades si existen.
     let updatedCities = this.state.cities
@@ -179,10 +208,18 @@ class App extends Component {
     })
   }
 
+  /**
+   * Devuelve hace cuanto se actualizo en palabras.
+   * @param Number from Timestamp actual
+   * @param Number to Timestamp utlima actualizacion
+   */
   getHumanizedDiff (from, to) {
     return moment.duration(moment(from).diff(moment(to))).humanize()
   }
 
+  /**
+   * Carga inicial de ciudades.
+   */
   componentDidMount () {
     // Cargar ciudades.
     this.fetchCities()
