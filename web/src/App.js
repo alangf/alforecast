@@ -79,8 +79,8 @@ class App extends Component {
     return city.time !== '' && city.timezone !== '' 
       ? (
         <div>
-          <p>moment.tz(city.time, city.timezone).format('DD-MM-YYYY')</p>
-          <p>moment.tz(city.time, city.timezone).format('hh:mm:ss A')</p>
+          <p>{moment.tz(city.time, city.timezone).format('DD-MM-YYYY')}</p>
+          <p>{moment.tz(city.time, city.timezone).format('hh:mm:ss A')}</p>
         </div>
       )
       : ''
@@ -94,14 +94,10 @@ class App extends Component {
     if (this.state.isConnectingToSocket)
       return false
 
-    // Si en 3 segundos no ha iniciado el socket, reintentar.
-    if (!this.state.isSocketOnline)
-      setTimeout(() => {
-        this.startSocket()
-      }, 3000)
-
     try {
-      const socketUrl = 'ws://' + document.location.hostname + ':' + process.env.REACT_APP_SOCKET_PORT
+      const protocol = process.env.NODE_ENV === 'development' ? 'ws://' : 'wss://'
+      const socketUrl = protocol + document.location.hostname
+      console.log('Abriendo socket ' + socketUrl) 
       const socket = new WebSocket(socketUrl)
 
       this.setState({
@@ -115,19 +111,21 @@ class App extends Component {
         })
         console.log('opened socket')
 
-        // Si se desconecta, esperar un segundo y reconectar.
-        socket.addEventListener('close', e => {
-          this.setState({
-            isSocketOnline: false
-          }, () => {
-            setTimeout(() => {
-              this.startSocket()
-            }, 1000)
-          })
+      })
+
+      // Si se desconecta, esperar un segundo y reconectar.
+      socket.addEventListener('close', e => {
+        this.setState({
+          isSocketOnline: false,
+          isConnectingToSocket: false
+        }, () => {
+          setTimeout(() => {
+            this.startSocket()
+          }, 1000)
         })
       })
 
-      // Esperar el forecast cada 10 segundos.
+        // Esperar el forecast cada 10 segundos.
       socket.addEventListener('message', e => {
         const payload = JSON.parse(e.data)
         console.log('Recibido', payload)
@@ -167,6 +165,7 @@ class App extends Component {
       })
     }
     catch (e) {
+      console.log('Error abriendo socket: ', e)
       // Reintentar conexion en un segundo.
       setTimeout(() => {
         this.startSocket()
