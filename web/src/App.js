@@ -76,7 +76,9 @@ class App extends Component {
       return false
 
     try {
-      const socketUrl = 'wss://' + document.location.hostname + ':' + process.env.REACT_APP_SOCKET_PORT
+      const protocol = process.env.NODE_ENV == 'development' ? 'ws://' : 'wss://'
+      const socketUrl = protocol + document.location.hostname + ':' + process.env.REACT_APP_SOCKET_PORT
+      console.log('Abriendo socket ' + socketUrl) 
       const socket = new WebSocket(socketUrl)
 
       this.setState({
@@ -90,20 +92,21 @@ class App extends Component {
         })
         console.log('opened socket')
 
-        // Si se desconecta, esperar un segundo y reconectar.
-        socket.addEventListener('close', e => {
-          this.setState({
-            isSocketOnline: false,
-            isConnectingToSocket: false
-          }, () => {
-            setTimeout(() => {
-              this.startSocket()
-            }, 1000)
-          })
+      })
+
+      // Si se desconecta, esperar un segundo y reconectar.
+      socket.addEventListener('close', e => {
+        this.setState({
+          isSocketOnline: false,
+          isConnectingToSocket: false
+        }, () => {
+          setTimeout(() => {
+            this.startSocket()
+          }, 1000)
         })
       })
 
-      // Esperar el forecast cada 10 segundos.
+        // Esperar el forecast cada 10 segundos.
       socket.addEventListener('message', e => {
         const payload = JSON.parse(e.data)
         console.log('Recibido', payload)
@@ -139,6 +142,7 @@ class App extends Component {
       })
     }
     catch (e) {
+      console.log('Error abriendo socket: ', e)
       // Reintentar conexion en un segundo.
       setTimeout(() => {
         this.startSocket()
