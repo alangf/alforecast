@@ -7,7 +7,7 @@ class City {
         this.temperature = options.temperature || ''
         this.time = options.time || ''
         this.isLoading = options.isLoading || false
-        this.timezone = options.timezone || '',
+        this.timezone = options.timezone || ''
         this.icon = options.icon || ''
     }
 }
