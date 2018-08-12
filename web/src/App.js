@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Card from './components/Card'
 import Loading from './components/Loading'
+import TopBar from './components/TopBar'
 import './App.css';
 import City from './City'
 import axios from 'axios'
@@ -20,6 +21,7 @@ class App extends Component {
       isFetchingForecast: false,
       isSocketOnline: false,
       isErrorVisible: false,
+      isConnectingToSocket: false
     }
     this.ticker = null
   }
@@ -39,6 +41,11 @@ class App extends Component {
           errorMessage: '',
           isLoading: false
         }, () => {
+          console.log('Fetch inicial')
+          // Iniciar socket.
+          this.startSocket()
+
+          // Iniciar ticker.
           this.startTicker()
         })
       } else {
@@ -52,7 +59,6 @@ class App extends Component {
     .catch(error => {
       // Envió un error, reintentar.
       setTimeout(() => {
-        console.log('Refetch cities')
         this.fetchCities()
       }, 1000)
     })
@@ -64,11 +70,11 @@ class App extends Component {
       : ''
   }
 
-  showError () {
-
-  }
-
   startSocket () {
+    // Si ya esta intentando conectar, abortar.
+    if (this.state.isConnectingToSocket)
+      return false
+
     // Si en 3 segundos no ha iniciado el socket, reintentar.
     if (!this.state.isSocketOnline)
       setTimeout(() => {
@@ -76,19 +82,40 @@ class App extends Component {
       }, 3000)
 
     try {
-      const socket = new WebSocket(process.env.REACT_APP_SOCKET_URL)
-      socket.addEventListener('open', (e) => {
+      const socketUrl = 'ws://' + document.location.hostname + ':' + process.env.REACT_APP_SOCKET_PORT
+      const socket = new WebSocket(socketUrl)
+
+      this.setState({
+        isConnectingToSocket: true
+      })
+
+      socket.addEventListener('open', e => {
         this.setState({
-          isSocketOnline: true
+          isSocketOnline: true,
+          isConnectingToSocket: false
         })
         console.log('opened socket')
+
+        // Si se desconecta, esperar un segundo y reconectar.
+        socket.addEventListener('close', e => {
+          this.setState({
+            isSocketOnline: false
+          }, () => {
+            setTimeout(() => {
+              this.startSocket()
+            }, 1000)
+          })
+        })
       })
+
+      // Esperar el forecast cada 10 segundos.
       socket.addEventListener('message', e => {
         const payload = JSON.parse(e.data)
         console.log('Recibido', payload)
-        // Si es un objeto valido, rehidratar ciudades.
+
+        // Si es un objeto valido, actualizar ciudades.
         if (payload.success) {
-          // forecast valido, actualizar ciudades.
+          // Forecast valido, actualizar ciudades.
           this.setState({
             cities: payload.data.cities,
             lastUpdateTimestamp: new Date().getTime(),
@@ -119,7 +146,6 @@ class App extends Component {
     catch (e) {
       // Reintentar conexion en un segundo.
       setTimeout(() => {
-        console.log('Reconectar socket')
         this.startSocket()
       }, 1000)
     }
@@ -157,16 +183,9 @@ class App extends Component {
     return moment.duration(moment(from).diff(moment(to))).humanize()
   }
 
-  componentWillMount () {
+  componentDidMount () {
     // Cargar ciudades.
     this.fetchCities()
-
-    // Iniciar socket.
-    this.startSocket()
-
-    // Iniciar ticker.
-    this.startTicker()
-    
   }
 
   render() {
@@ -175,18 +194,12 @@ class App extends Component {
         {this.state.isLoading && <Loading/>}
         {!this.state.isLoading && (
           <div className="dashboard">
-            <div className="top-bar">
-              <div className="top-bar-local">
-                {moment(this.state.localTimestamp).format('DD-MM-YYYY hh:mm:ss A')}
-                {this.state.localTimestamp !== this.state.lastUpdateTimestamp && 
-                  ' | Actualizado hace ' + this.state.lastUpdateHumanized}
-              </div>
-              {this.state.isErrorVisible && (
-                <div className="top-bar-error">
-                  {this.state.errorMessage}
-                </div>
-              )}
-            </div>
+            <TopBar
+              current={moment(this.state.localTimestamp).format('DD-MM-YYYY hh:mm:ss A')}
+              updated={this.state.localTimestamp !== this.state.lastUpdateTimestamp ? this.state.lastUpdateHumanized : ''}
+              isErrorVisible={this.state.isErrorVisible}
+              errorMessage={this.state.errorMessage} 
+            />
 
             {this.state.cities.length > 0 && (
               <div className="cities-grid">
