@@ -6,7 +6,7 @@
     "server": "nodemon server.js",
     "dev": "concurrently --kill-others-on-fail \"yarn server\" \"yarn web\"",
     "start": "node server.js",
-    "heroku-postbuild": "cd web && npm install && npm install --only=dev --no-shrinkwrap && npm run build"
+    "heroku-postbuild": "cd web && yarn install && yarn install --only=dev --no-shrinkwrap && yarn run build"
   },
   "dependencies": {
     "axios": "^0.18.0",
